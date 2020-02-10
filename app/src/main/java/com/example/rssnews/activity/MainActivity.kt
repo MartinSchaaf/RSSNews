@@ -1,7 +1,8 @@
-package com.example.rssnews
+package com.example.rssnews.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.rssnews.R
 
 class MainActivity : AppCompatActivity() {
 
