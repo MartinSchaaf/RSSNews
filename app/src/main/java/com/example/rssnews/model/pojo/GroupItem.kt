@@ -1,4 +1,4 @@
-package com.example.rssnews.model.POJO
+package com.example.rssnews.model.pojo
 
 data class GroupItem(
 	val thumbnail: Thumbnail? = null,

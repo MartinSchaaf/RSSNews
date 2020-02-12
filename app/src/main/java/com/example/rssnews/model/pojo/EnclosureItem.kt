@@ -1,4 +1,4 @@
-package com.example.rssnews.model.POJO
+package com.example.rssnews.model.pojo
 
 data class EnclosureItem(
 	val height: String? = null,

@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <data>
+
+        <variable
+            name="item"
+            type="com.example.rssnews.model.pojo.NewsItem" />
+
+    </data>
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            app:cardCornerRadius="30dp">
+            style="@style/Widget.MaterialComponents.CardView"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="5sp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="15dp">
 
                 <TextView
                     android:id="@+id/news_list_item_title"
@@ -22,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="25sp"
                     android:fontFamily="@font/montserrat_semi_bold"
-                    android:text="I like programming"/>
+                    android:text="@{item.title}"/>
 
                 <TextView
                     android:id="@+id/news_list_item_pub_date"
@@ -30,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="22sp"
                     android:fontFamily="@font/montserrat_regular"
-                    android:text="20.20.12"/>
+                    android:text="@{item.pubDate}"/>
 
                 <TextView
                     android:id="@+id/news_list_item_description"
@@ -38,8 +50,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="20sp"
                     android:fontFamily="@font/montserrat_italic"
-                    android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
-
+                    android:text="@{item.description}"/>
             </LinearLayout>
 
 

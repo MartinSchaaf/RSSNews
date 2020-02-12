@@ -5,7 +5,8 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.NewsListFragment">
+    tools:context=".fragments.NewsListFragment"
+    android:padding="8dp">
 
     <Spinner
         android:id="@+id/category_spinner"

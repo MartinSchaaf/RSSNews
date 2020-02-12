@@ -1,7 +1,6 @@
 package com.example.rssnews.model
 
-import com.example.rssnews.model.POJO.Response
-import com.example.rssnews.model.POJO.Rss
+import com.example.rssnews.model.pojo.Rss
 import retrofit2.Retrofit
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import retrofit2.http.GET

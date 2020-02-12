@@ -1,4 +1,4 @@
-package com.example.rssnews.model.POJO
+package com.example.rssnews.model.pojo
 
 import org.simpleframework.xml.Attribute
 

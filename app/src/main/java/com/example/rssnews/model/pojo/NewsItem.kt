@@ -1,12 +1,10 @@
-package com.example.rssnews.model.POJO
+package com.example.rssnews.model.pojo
 
 import org.simpleframework.xml.*
 
 
-data class ItemItem @JvmOverloads constructor(
+data class NewsItem @JvmOverloads constructor(
 
-    //@Path("enclosure")
-    //@Text(required=false)
    @field:ElementList(name = "enclosure",inline = true, required = false)
    @param:ElementList(name = "enclosure",inline = true, required = false)
     var enclosure: List<Enclosure>? = null,

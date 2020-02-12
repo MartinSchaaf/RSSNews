@@ -1,6 +1,4 @@
-package com.example.rssnews.model.POJO
-
-import org.simpleframework.xml.Element
+package com.example.rssnews.model.pojo
 
 
 class Response {
