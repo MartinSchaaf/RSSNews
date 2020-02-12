@@ -1,19 +1,45 @@
 package com.example.rssnews.model.POJO
 
-import org.simpleframework.xml.Element
+import org.simpleframework.xml.*
 
-data class ItemItem(
-	@Element(name = "yandex:full-text")
-	val fullText: String? = null,
-	@Element(name = "enclosure")
-	val enclosure: Enclosure? = null,
-	@Element(name = "amplink")
-	val amplink: String? = null,
 
-	val link: String? = null,
-	val description: String? = null,
-	val title: String? = null,
-	val category: String? = null,
-	val pubDate: String? = null,
-	val group: Group? = null
+data class ItemItem @JvmOverloads constructor(
+
+    //@Path("enclosure")
+    //@Text(required=false)
+   @field:ElementList(name = "enclosure",inline = true, required = false)
+   @param:ElementList(name = "enclosure",inline = true, required = false)
+    var enclosure: List<Enclosure>? = null,
+
+    @field:Element(name = "amplink")
+    @param:Element(name = "amplink")
+    var amplink: String? = null,
+
+    @field:Element(name = "link")
+    @param:Element(name = "link")
+    var link: String? = null,
+
+    @field:Element(name = "description")
+    @param:Element(name = "description")
+    var description: String? = null,
+
+    @field:Element(name = "title")
+    @param:Element(name = "title")
+    var title: String? = null,
+
+    @field:Element(name = "category")
+    @param:Element(name = "category")
+    var category: String? = null,
+
+    @field:Element(name = "pubDate")
+    @param:Element(name = "pubDate")
+    var pubDate: String? = null,
+
+    @field:Element(name = "full-text")
+    @param:Element(name = "full-text")
+    var fullText: String? = null,
+
+    @field:ElementList(entry = "group", inline = true, required = false)
+    @param:ElementList(entry = "group", inline = true, required = false)
+    var group: List<Group>? = null
 )

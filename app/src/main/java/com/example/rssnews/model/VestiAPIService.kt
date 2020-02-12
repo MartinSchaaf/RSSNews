@@ -1,18 +1,17 @@
 package com.example.rssnews.model
 
 import com.example.rssnews.model.POJO.Response
-import io.reactivex.Observable
+import com.example.rssnews.model.POJO.Rss
 import retrofit2.Retrofit
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import retrofit2.http.GET
-import okhttp3.OkHttpClient
 
 
 
 interface VestiRetrofitInterface{
 
     @GET("vesti.rss")
-    suspend fun getNews():Response
+    suspend fun getNews(): Rss
 }
 
 object VestiAPIService {

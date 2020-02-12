@@ -58,12 +58,13 @@ dependencies {
 
     //Retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation 'com.squareup.retrofit2:converter-simplexml:2.6.1'
 
     //TikXml
-    kapt "com.tickaroo.tikxml:processor:$tikxml_version"
-    implementation "com.tickaroo.tikxml:annotation:$tikxml_version"
-    implementation "com.tickaroo.tikxml:core:$tikxml_version"
-    implementation "com.tickaroo.tikxml:retrofit-converter:$tikxml_version"
+    //kapt "com.tickaroo.tikxml:processor:$tikxml_version"
+    //implementation "com.tickaroo.tikxml:annotation:$tikxml_version"
+    //implementation "com.tickaroo.tikxml:core:$tikxml_version"
+    //implementation "com.tickaroo.tikxml:retrofit-converter:$tikxml_version"
 
     //Kotlin Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
