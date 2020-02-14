@@ -1,10 +1,12 @@
 package com.example.rssnews.model.pojo
 
+import androidx.room.Embedded
 import org.simpleframework.xml.*
 
 
 data class NewsItem @JvmOverloads constructor(
 
+   @Embedded
    @field:ElementList(name = "enclosure",inline = true, required = false)
    @param:ElementList(name = "enclosure",inline = true, required = false)
     var enclosure: List<Enclosure>? = null,
@@ -37,6 +39,7 @@ data class NewsItem @JvmOverloads constructor(
     @param:Element(name = "full-text")
     var fullText: String? = null,
 
+    @Embedded
     @field:ElementList(entry = "group", inline = true, required = false)
     @param:ElementList(entry = "group", inline = true, required = false)
     var group: List<Group>? = null
