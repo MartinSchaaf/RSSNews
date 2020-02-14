@@ -8,6 +8,7 @@ import com.example.rssnews.R
 import com.example.rssnews.fragments.NewsListFragment
 import com.example.rssnews.model.VestiAPIService
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_news_list.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -19,6 +20,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+
+        setSupportActionBar(toolbar)
+
+    }
+
+    override fun onStart() {
+        super.onStart()
 
     }
 
