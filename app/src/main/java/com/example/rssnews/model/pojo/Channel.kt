@@ -1,16 +1,15 @@
 package com.example.rssnews.model.pojo
 
-import androidx.room.Embedded
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.ElementList
 
 
 data class Channel @JvmOverloads constructor(
 
-	@Embedded
+
     @field:ElementList(entry = "item", inline = true, required = false)
 	@param:ElementList(entry = "item", inline = true, required = false)
-	var item: List<NewsItem>? = null,
+	var item: List<ResponseNewsItem>? = null,
 
     @field:Element(name = "about")
 	@param:Element(name = "about")

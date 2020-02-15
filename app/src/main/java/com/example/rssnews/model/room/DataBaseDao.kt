@@ -1,16 +1,19 @@
 package com.example.rssnews.model.room
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.example.rssnews.model.pojo.Rss
 
 @Dao
 interface DataBaseDao {
 
-    @Query("SELECT * FROM response")
-    suspend fun getAll(): Rss
+    @Query("SELECT * FROM news_items")
+    suspend fun getAll(): List<NewsItem>?
 
     @Insert
-    suspend fun insert(response: Rss)
+    suspend fun insert(item: NewsItem)
+
+    @Delete
+    suspend fun delete(item: NewsItem)
 }

@@ -1,27 +1,25 @@
 package com.example.rssnews.fragments
 
 import android.content.Context
-import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import com.example.rssnews.R
-import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.model.NewsListRecyclerViewAdapter
 import com.example.rssnews.model.VestiAPIService
+import com.example.rssnews.model.room.DataBaseDao
 import com.example.rssnews.view_model.NewsListFragmentViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
@@ -30,6 +28,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.Exception
 import java.net.SocketTimeoutException
+import androidx.room.Room
+import com.example.rssnews.model.room.AppDatabase
+import com.example.rssnews.model.room.NewsItem
+import android.widget.ArrayAdapter
+import com.example.rssnews.model.UserSharedPreferences
+import java.io.IOException
+import java.util.ArrayList
 
 
 class NewsListFragment : Fragment() {
@@ -38,8 +43,31 @@ class NewsListFragment : Fragment() {
     lateinit var recyclerView: RecyclerView
     lateinit var categorySpinner: Spinner
     lateinit var swipeRefresh: SwipeRefreshLayout
-    lateinit var adapter: NewsListRecyclerViewAdapter
+    lateinit var recyclerViewAdapter: NewsListRecyclerViewAdapter
     lateinit var ctx: Context
+    lateinit var dao: DataBaseDao
+
+    companion object {
+
+        fun isOnline(): Boolean {
+
+            val runtime = Runtime.getRuntime()
+            try {
+                val ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8")
+                val exitValue = ipProcess.waitFor()
+                return exitValue == 0
+            } catch (e: IOException) {
+
+                e.printStackTrace()
+            } catch (e: InterruptedException) {
+
+                e.printStackTrace()
+            }
+
+            return false
+        }
+
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -52,6 +80,9 @@ class NewsListFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         viewModel = ViewModelProviders.of(this).get(NewsListFragmentViewModel::class.java)
+        dao =
+            Room.databaseBuilder(ctx, AppDatabase::class.java, "response_database").build().getDao()
+
     }
 
 
@@ -72,28 +103,44 @@ class NewsListFragment : Fragment() {
     override fun onStart() {
         super.onStart()
 
-        adapter = NewsListRecyclerViewAdapter(null)
+        recyclerViewAdapter = NewsListRecyclerViewAdapter(null)
         recyclerView.layoutManager = LinearLayoutManager(ctx)
-        recyclerView.adapter = adapter
+        recyclerView.adapter = recyclerViewAdapter
 
-        if (viewModel.newsResponse.value == null){
+        if (!isOnline()) {
+
+            CoroutineScope(IO).launch {
+
+                dao.getAll()?.let {
+
+                    viewModel.newsItemsList.postValue(it)
+
+                }
+            }
+
+        }
+
+        if (viewModel.newsItemsList.value == null) {
 
             loadData()
         }
 
-        viewModel.newsResponse.observe(this, Observer {
+        viewModel.newsItemsList.observe(this, Observer {
 
-            adapter.updateData(it.channel?.item!!,
+            recyclerViewAdapter.updateData(it,
                 object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
 
                     override fun onCompleteUpdateRecyclerView() {
                         swipeRefresh.isRefreshing = false
                     }
                 })
+
+            setCategorySpinnerAdapter()
         })
 
 
-        swipeRefresh.setColorSchemeColors(ContextCompat.getColor(ctx,R.color.colorAccent))
+
+        swipeRefresh.setColorSchemeColors(ContextCompat.getColor(ctx, R.color.colorAccent))
 
         swipeRefresh.setOnRefreshListener {
             loadData()
@@ -111,16 +158,51 @@ class NewsListFragment : Fragment() {
                 if (!swipeRefresh.isRefreshing) swipeRefresh.isRefreshing = true
 
                 val response = VestiAPIService.vestiAPIService.getNews()
-                viewModel.newsResponse.postValue(response)
+
+                //Add categories list to ViewModel
 
                 val categories = LinkedHashSet<String>()
 
-                viewModel.newsResponse.value!!.channel?.item?.forEach { newsItem ->
+                response.channel?.item?.forEach { newsItem ->
 
                     categories.add(newsItem.category!!)
                 }
 
-                viewModel.categotiesList.set(categories.toList())
+                categories.add("Все")
+
+                viewModel.categoriesList.set(categories.toList())
+
+
+                //Add news items to database and viewModel
+
+                val itemsListFromResponse: MutableList<NewsItem> = mutableListOf()
+                val itemsListFromDataBase = dao.getAll()
+
+                itemsListFromDataBase?.forEach {
+                    dao.delete(it)
+                }
+
+
+                response.channel?.item?.forEach { it ->
+
+                    val newsItem = NewsItem(
+
+                        if (it.enclosure != null) it.enclosure[0].url!!
+                        else "no url",
+                        it.title!!,
+                        it.description!!,
+                        it.fullText!!,
+                        it.pubDate!!,
+                        it.link!!,
+                        it.category!!
+                    )
+
+                    itemsListFromResponse.add(newsItem)
+
+                    dao.insert(newsItem)
+                }
+
+                viewModel.newsItemsList.postValue(itemsListFromResponse)
 
             } catch (e: SocketTimeoutException) {
 
@@ -130,7 +212,7 @@ class NewsListFragment : Fragment() {
                     showToast("Превышено время ожидания")
                 }
 
-            } catch (e:Exception){
+            } catch (e: Exception) {
 
                 e.printStackTrace()
                 withContext(Main) {
@@ -140,7 +222,7 @@ class NewsListFragment : Fragment() {
 
             } finally {
 
-                withContext(Main){
+                withContext(Main) {
                     swipeRefresh.isRefreshing = false
                 }
             }
@@ -148,12 +230,87 @@ class NewsListFragment : Fragment() {
     }
 
 
-    private fun showToast(message: String){
+    private fun showToast(message: String) {
+
         Toast.makeText(
             ctx,
             message,
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    private fun setCategorySpinnerAdapter() {
+
+        val adapter =
+            ArrayAdapter<String>(
+                ctx,
+                android.R.layout.simple_spinner_item,
+                viewModel.categoriesList.get()!!
+            )
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categorySpinner.adapter = adapter
+
+        var id = 0
+
+        viewModel.categoriesList.get()!!.forEachIndexed { index, s ->
+
+            if (s == UserSharedPreferences.getLastUserSelectedCategory())
+                id = index
+        }
+
+        categorySpinner.setSelection(id)
+
+        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                swipeRefresh.isRefreshing = true
+
+                val category = viewModel.categoriesList.get()!![position]
+                UserSharedPreferences.setLastUserSelectedCategory(category)
+                filterByCategory()
+            }
+
+        }
+    }
+
+    private fun filterByCategory(){
+
+        val category = UserSharedPreferences.getLastUserSelectedCategory()
+
+        var sortedItemsList: MutableList<NewsItem> = mutableListOf()
+
+        CoroutineScope(IO).launch {
+
+            if(category != "Все"){
+
+                dao.getAll()?.forEach {
+
+                    if (it.category == category) sortedItemsList.add(it)
+                }
+            }else sortedItemsList = dao.getAll()!!.toMutableList()
+
+
+            withContext(Main){
+
+                recyclerViewAdapter.updateData(sortedItemsList,
+                    object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
+
+                        override fun onCompleteUpdateRecyclerView() {
+                            swipeRefresh.isRefreshing = false
+                        }
+                    })
+            }
+
+        }
+
     }
 
 

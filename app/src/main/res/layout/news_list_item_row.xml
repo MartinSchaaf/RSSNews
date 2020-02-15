@@ -5,7 +5,7 @@
 
         <variable
             name="item"
-            type="com.example.rssnews.model.pojo.NewsItem" />
+            type="com.example.rssnews.model.room.NewsItem" />
 
     </data>
 

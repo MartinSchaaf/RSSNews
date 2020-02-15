@@ -1,7 +1,7 @@
 package com.example.rssnews.model
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.rssnews.model.pojo.NewsItem
+import com.example.rssnews.model.room.NewsItem
 
 class NewsListDiffUtil(val oldData: List<NewsItem>?, val newData: List<NewsItem>?)  : DiffUtil.Callback(){
 
