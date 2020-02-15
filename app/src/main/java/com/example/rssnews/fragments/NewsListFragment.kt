@@ -32,7 +32,9 @@ import androidx.room.Room
 import com.example.rssnews.model.room.AppDatabase
 import com.example.rssnews.model.room.NewsItem
 import android.widget.ArrayAdapter
+import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.model.UserSharedPreferences
+import com.example.rssnews.view_model.MainActivityViewModel
 import java.io.IOException
 import java.util.ArrayList
 
@@ -40,6 +42,7 @@ import java.util.ArrayList
 class NewsListFragment : Fragment() {
 
     lateinit var viewModel: NewsListFragmentViewModel
+    lateinit var activityViewModel: MainActivityViewModel
     lateinit var recyclerView: RecyclerView
     lateinit var categorySpinner: Spinner
     lateinit var swipeRefresh: SwipeRefreshLayout
@@ -47,27 +50,6 @@ class NewsListFragment : Fragment() {
     lateinit var ctx: Context
     lateinit var dao: DataBaseDao
 
-    companion object {
-
-        fun isOnline(): Boolean {
-
-            val runtime = Runtime.getRuntime()
-            try {
-                val ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8")
-                val exitValue = ipProcess.waitFor()
-                return exitValue == 0
-            } catch (e: IOException) {
-
-                e.printStackTrace()
-            } catch (e: InterruptedException) {
-
-                e.printStackTrace()
-            }
-
-            return false
-        }
-
-    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -80,6 +62,7 @@ class NewsListFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         viewModel = ViewModelProviders.of(this).get(NewsListFragmentViewModel::class.java)
+        activityViewModel = ViewModelProviders.of(activity!!).get(MainActivityViewModel::class.java)
         dao =
             Room.databaseBuilder(ctx, AppDatabase::class.java, "response_database").build().getDao()
 
@@ -103,27 +86,13 @@ class NewsListFragment : Fragment() {
     override fun onStart() {
         super.onStart()
 
-        recyclerViewAdapter = NewsListRecyclerViewAdapter(null)
+        recyclerViewAdapter =
+            NewsListRecyclerViewAdapter(null, activityViewModel.onListItemClickLiveData)
         recyclerView.layoutManager = LinearLayoutManager(ctx)
         recyclerView.adapter = recyclerViewAdapter
 
-        if (!isOnline()) {
 
-            CoroutineScope(IO).launch {
-
-                dao.getAll()?.let {
-
-                    viewModel.newsItemsList.postValue(it)
-
-                }
-            }
-
-        }
-
-        if (viewModel.newsItemsList.value == null) {
-
-            loadData()
-        }
+        loadData()
 
         viewModel.newsItemsList.observe(this, Observer {
 
@@ -134,6 +103,18 @@ class NewsListFragment : Fragment() {
                         swipeRefresh.isRefreshing = false
                     }
                 })
+
+            val categories = LinkedHashSet<String>()
+
+            it.forEach { newsItem ->
+
+                categories.add(newsItem.category)
+            }
+
+            categories.add("Все")
+
+            viewModel.categoriesList.set(categories.toList())
+
 
             setCategorySpinnerAdapter()
         })
@@ -206,25 +187,31 @@ class NewsListFragment : Fragment() {
 
             } catch (e: SocketTimeoutException) {
 
-                e.printStackTrace()
-                withContext(Main) {
 
-                    showToast("Превышено время ожидания")
-                }
+                e.printStackTrace()
+
+                if (dao.getAll() != null) {
+                    viewModel.newsItemsList.postValue(dao.getAll())
+                    withContext(Main) { showToast("Превышено время ожидания, загружены предыдущие данные") }
+
+                } else withContext(Main) { showToast("Превышено время ожидания") }
+
 
             } catch (e: Exception) {
 
-                e.printStackTrace()
-                withContext(Main) {
 
-                    showToast("Ошибка соединения")
-                }
+                e.printStackTrace()
+
+                if (dao.getAll() != null) {
+                    viewModel.newsItemsList.postValue(dao.getAll())
+                    withContext(Main) { showToast("Ошибка соединения, загружены предыдущие данные") }
+
+                } else withContext(Main) { showToast("Ошибка соединения") }
+
 
             } finally {
 
-                withContext(Main) {
-                    swipeRefresh.isRefreshing = false
-                }
+                withContext(Main) { swipeRefresh.isRefreshing = false }
             }
         }
     }
@@ -261,7 +248,7 @@ class NewsListFragment : Fragment() {
 
         categorySpinner.setSelection(id)
 
-        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
 
@@ -281,7 +268,8 @@ class NewsListFragment : Fragment() {
         }
     }
 
-    private fun filterByCategory(){
+
+    private fun filterByCategory() {
 
         val category = UserSharedPreferences.getLastUserSelectedCategory()
 
@@ -289,16 +277,16 @@ class NewsListFragment : Fragment() {
 
         CoroutineScope(IO).launch {
 
-            if(category != "Все"){
+            if (category != "Все") {
 
                 dao.getAll()?.forEach {
 
                     if (it.category == category) sortedItemsList.add(it)
                 }
-            }else sortedItemsList = dao.getAll()!!.toMutableList()
+            } else sortedItemsList = dao.getAll()!!.toMutableList()
 
 
-            withContext(Main){
+            withContext(Main) {
 
                 recyclerViewAdapter.updateData(sortedItemsList,
                     object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
@@ -312,6 +300,5 @@ class NewsListFragment : Fragment() {
         }
 
     }
-
 
 }
