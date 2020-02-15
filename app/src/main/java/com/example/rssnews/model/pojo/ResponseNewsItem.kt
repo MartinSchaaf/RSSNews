@@ -1,10 +1,9 @@
 package com.example.rssnews.model.pojo
 
-import androidx.room.*
 import org.simpleframework.xml.*
 
 
-data class NewsItem @JvmOverloads constructor(
+data class ResponseNewsItem @JvmOverloads constructor(
 
 
    @field:ElementList(name = "enclosure",inline = true, required = false)
