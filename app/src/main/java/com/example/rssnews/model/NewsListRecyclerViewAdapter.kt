@@ -1,15 +1,17 @@
 package com.example.rssnews.model
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rssnews.R
 import com.example.rssnews.databinding.NewsListItemRowBinding
 import com.example.rssnews.model.room.NewsItem
 
-class NewsListRecyclerViewAdapter(var data: List<NewsItem>?) :
+class NewsListRecyclerViewAdapter(var data: List<NewsItem>?, val onClickLivaData: MutableLiveData<Bundle>) :
     RecyclerView.Adapter<NewsListRecyclerViewAdapter.NewsListViewHolder>() {
 
     interface OnCompleteUpdateRecyclerView {
@@ -35,6 +37,18 @@ class NewsListRecyclerViewAdapter(var data: List<NewsItem>?) :
 
         data?.let {
             holder.bind(data!![position])
+
+            holder.binding.root.setOnClickListener {
+
+                val item = holder.binding.item
+
+                val bundle = Bundle()
+                bundle.putString("title",item!!.title)
+                bundle.putString("imageUrl",item.imageUrl)
+                bundle.putString("fullText",item.fullText)
+
+                onClickLivaData.value = bundle
+            }
         }
 
 
@@ -49,7 +63,7 @@ class NewsListRecyclerViewAdapter(var data: List<NewsItem>?) :
         listener.onCompleteUpdateRecyclerView()
     }
 
-    inner class NewsListViewHolder(private val binding: NewsListItemRowBinding) :
+    inner class NewsListViewHolder(val binding: NewsListItemRowBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: NewsItem?) {
