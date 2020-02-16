@@ -6,4 +6,6 @@
     <color name="colorAccent">#f48fb1</color>
     <color name="colorSecondaryLight">#ffc1e3</color>
     <color name="colorSecondaryDark">#bf5f82</color>
+    <color name="navHostBackgroundColor">#e1e2e1</color>
+    <color name="spinnerBackgroundColor">#FFFFFF</color>
 </resources>

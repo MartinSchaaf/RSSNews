@@ -49,13 +49,15 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+        viewModel.onListItemClickLiveData.value = null
+
         viewModel.onListItemClickLiveData.observe(this, Observer {
 
+            it?.let {
 
-            navController.navigate(R.id.currentNewsItemFragment)
+                navController.navigate(R.id.currentNewsItemFragment)
+            }
 
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.setDisplayShowHomeEnabled(true)
         })
 
     }

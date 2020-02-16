@@ -65,7 +65,6 @@ class NewsListFragment : Fragment() {
         activityViewModel = ViewModelProviders.of(activity!!).get(MainActivityViewModel::class.java)
         dao =
             Room.databaseBuilder(ctx, AppDatabase::class.java, "response_database").build().getDao()
-
     }
 
 
@@ -91,8 +90,10 @@ class NewsListFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(ctx)
         recyclerView.adapter = recyclerViewAdapter
 
-
-        loadData()
+        when{
+            viewModel.newsItemsList.value == null -> loadData()
+            viewModel.categoriesList.get() == null -> loadData()
+        }
 
         viewModel.newsItemsList.observe(this, Observer {
 
@@ -126,6 +127,10 @@ class NewsListFragment : Fragment() {
         swipeRefresh.setOnRefreshListener {
             loadData()
         }
+
+        val activity = activity as MainActivity
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        activity.supportActionBar?.setDisplayShowHomeEnabled(false)
 
     }
 
@@ -211,7 +216,7 @@ class NewsListFragment : Fragment() {
 
             } finally {
 
-                withContext(Main) { swipeRefresh.isRefreshing = false }
+                withContext(Main) { if(swipeRefresh.isRefreshing) swipeRefresh.isRefreshing = false }
             }
         }
     }
@@ -258,7 +263,6 @@ class NewsListFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
-                swipeRefresh.isRefreshing = true
 
                 val category = viewModel.categoriesList.get()!![position]
                 UserSharedPreferences.setLastUserSelectedCategory(category)

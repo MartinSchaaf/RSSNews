@@ -6,5 +6,5 @@ import androidx.lifecycle.ViewModel
 
 class MainActivityViewModel : ViewModel(){
 
-    val onListItemClickLiveData: MutableLiveData<Bundle> = MutableLiveData()
+    var onListItemClickLiveData: MutableLiveData<Bundle> = MutableLiveData()
 }

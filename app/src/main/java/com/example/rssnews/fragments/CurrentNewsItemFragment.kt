@@ -12,9 +12,16 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 
 import com.example.rssnews.R
+import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.databinding.FragmentCurrentNewsItemBinding
 import com.example.rssnews.view_model.CurrentNewsItemFragmentViewModel
 import com.example.rssnews.view_model.MainActivityViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class CurrentNewsItemFragment : Fragment() {
 
@@ -28,6 +35,7 @@ class CurrentNewsItemFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(this).get(CurrentNewsItemFragmentViewModel::class.java)
         activityViewModel = ViewModelProviders.of(activity!!).get(MainActivityViewModel::class.java)
+
     }
 
     override fun onCreateView(
@@ -45,13 +53,24 @@ class CurrentNewsItemFragment : Fragment() {
 
         activityViewModel.onListItemClickLiveData.observe(this, Observer {
 
-            viewModel.title.set(it.getString("title"))
-            viewModel.imageURL.set(it.getString("imageUrl"))
-            viewModel.fullText.set(it.getString("fullText"))
-        })
+            it?.let {
 
+                viewModel.title.set(it.getString("title"))
+                viewModel.imageURL.set(it.getString("imageUrl"))
+                viewModel.fullText.set(it.getString("fullText"))
+            }
+
+        })
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        val activity = activity as MainActivity
+
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        activity.supportActionBar?.setDisplayShowHomeEnabled(true)
+    }
 
 }

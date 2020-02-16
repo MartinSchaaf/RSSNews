@@ -13,7 +13,6 @@ object DataBindingAdapters {
         image_url?.let {
             Picasso.get()
                 .load(image_url)
-                .fit()
                 .error(com.example.rssnews.R.drawable.ic_not_available)
                 .placeholder(com.example.rssnews.R.drawable.ic_not_available)
                 .into(view)

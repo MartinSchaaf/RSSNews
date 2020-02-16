@@ -21,13 +21,13 @@
         android:layout_height="match_parent"
         tools:context=".fragments.NewsListFragment">
 
-        <Spinner
-            android:id="@+id/category_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:entries = "@{viewModel.categoriesList}"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            <Spinner
+                android:id="@+id/category_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:entries = "@{viewModel.categoriesList}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/news_list_recyclerView"
