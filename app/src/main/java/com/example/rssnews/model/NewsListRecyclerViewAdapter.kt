@@ -11,8 +11,11 @@ import com.example.rssnews.R
 import com.example.rssnews.databinding.NewsListItemRowBinding
 import com.example.rssnews.model.room.NewsItem
 
-class NewsListRecyclerViewAdapter(var data: List<NewsItem>?, val onClickLivaData: MutableLiveData<Bundle>) :
-    RecyclerView.Adapter<NewsListRecyclerViewAdapter.NewsListViewHolder>() {
+class NewsListRecyclerViewAdapter(
+    var data: List<NewsItem>?,
+    private val onClickLivaData: MutableLiveData<Bundle>
+
+) : RecyclerView.Adapter<NewsListRecyclerViewAdapter.NewsListViewHolder>() {
 
     interface OnCompleteUpdateRecyclerView {
 
@@ -22,6 +25,7 @@ class NewsListRecyclerViewAdapter(var data: List<NewsItem>?, val onClickLivaData
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsListViewHolder {
 
         val inflater = LayoutInflater.from(parent.context)
+
         val binding = DataBindingUtil.inflate<NewsListItemRowBinding>(
             inflater,
             R.layout.news_list_item_row,
@@ -43,9 +47,9 @@ class NewsListRecyclerViewAdapter(var data: List<NewsItem>?, val onClickLivaData
                 val item = holder.binding.item
 
                 val bundle = Bundle()
-                bundle.putString("title",item!!.title)
-                bundle.putString("imageUrl",item.imageUrl)
-                bundle.putString("fullText",item.fullText)
+                bundle.putString("title", item!!.title)
+                bundle.putString("imageUrl", item.imageUrl)
+                bundle.putString("fullText", item.fullText)
 
                 onClickLivaData.value = bundle
             }

@@ -1,6 +1,5 @@
 <resources>
+
     <string name="app_name">ВестиRSS</string>
-
     <string name="categories">Категории</string>
-
 </resources>

@@ -33,6 +33,7 @@ import com.example.rssnews.model.room.NewsItem
 import android.widget.ArrayAdapter
 import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.model.UserSharedPreferences
+import com.example.rssnews.model.pojo.ResponseNewsItem
 import com.example.rssnews.view_model.MainActivityViewModel
 
 
@@ -108,6 +109,7 @@ class NewsListFragment : Fragment() {
     }
 
 
+
     private fun loadData() {
 
         CoroutineScope(IO).launch {
@@ -118,50 +120,9 @@ class NewsListFragment : Fragment() {
 
                 val response = VestiAPIService.vestiAPIService.getNews()
 
-                //Add categories list to ViewModel
+                addCategoriesListToViewModel(response.channel?.item)
 
-                val categories = LinkedHashSet<String>()
-
-                response.channel?.item?.forEach { newsItem ->
-
-                    categories.add(newsItem.category!!)
-                }
-
-                categories.add("Все")
-
-                viewModel.categoriesList.set(categories.toList())
-
-
-                //Add news items to database and viewModel
-
-                val itemsListFromResponse: MutableList<NewsItem> = mutableListOf()
-                val itemsListFromDataBase = dao.getAll()
-
-                itemsListFromDataBase?.forEach {
-                    dao.delete(it)
-                }
-
-
-                response.channel?.item?.forEach { it ->
-
-                    val newsItem = NewsItem(
-
-                        if (it.enclosure != null) it.enclosure[0].url!!
-                        else "no url",
-                        it.title!!,
-                        it.description!!,
-                        it.fullText!!,
-                        it.pubDate!!,
-                        it.link!!,
-                        it.category!!
-                    )
-
-                    itemsListFromResponse.add(newsItem)
-
-                    dao.insert(newsItem)
-                }
-
-                viewModel.newsItemsList.postValue(itemsListFromResponse)
+                addNewsItemsToDataBaseAndViewModel(response.channel?.item)
 
             } catch (e: SocketTimeoutException) {
 
@@ -194,19 +155,56 @@ class NewsListFragment : Fragment() {
         }
     }
 
-    private fun addCategotiesListToViewModel(itemsList: List<NewsItem>?){
+
+
+    private fun addCategoriesListToViewModel(itemsList: List<ResponseNewsItem>?){
 
         val categories = LinkedHashSet<String>()
 
         itemsList?.forEach { newsItem ->
 
-            categories.add(newsItem.category)
+            categories.add(newsItem.category!!)
         }
 
         categories.add("Все")
 
         viewModel.categoriesList.set(categories.toList())
     }
+
+
+
+    private suspend fun addNewsItemsToDataBaseAndViewModel(itemsList: List<ResponseNewsItem>?){
+
+        val itemsListForViewModel: MutableList<NewsItem> = mutableListOf()
+        val itemsListFromDataBase = dao.getAll()
+
+        itemsListFromDataBase?.forEach {
+            dao.delete(it)
+        }
+
+
+        itemsList?.forEach { it ->
+
+            val newsItem = NewsItem(
+
+                if (it.enclosure != null) it.enclosure[0].url!!
+                else "no url",
+                it.title!!,
+                it.description!!,
+                it.fullText!!,
+                it.pubDate!!,
+                it.link!!,
+                it.category!!
+            )
+
+            itemsListForViewModel.add(newsItem)
+
+            dao.insert(newsItem)
+        }
+
+        viewModel.newsItemsList.postValue(itemsListForViewModel)
+    }
+
 
 
     private fun showToast(message: String) {
@@ -218,79 +216,7 @@ class NewsListFragment : Fragment() {
         ).show()
     }
 
-    private fun setCategorySpinnerAdapter() {
 
-        val adapter =
-            ArrayAdapter<String>(
-                ctx,
-                android.R.layout.simple_spinner_item,
-                viewModel.categoriesList.get()!!
-            )
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categorySpinner.adapter = adapter
-
-        var id = 0
-
-        viewModel.categoriesList.get()!!.forEachIndexed { index, s ->
-
-            if (s == UserSharedPreferences.getLastUserSelectedCategory())
-                id = index
-        }
-
-        categorySpinner.setSelection(id)
-
-        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-
-                val category = viewModel.categoriesList.get()!![position]
-                UserSharedPreferences.setLastUserSelectedCategory(category)
-                filterByCategory()
-            }
-
-        }
-    }
-
-
-    private fun filterByCategory() {
-
-        val category = UserSharedPreferences.getLastUserSelectedCategory()
-
-        var sortedItemsList: MutableList<NewsItem> = mutableListOf()
-
-        CoroutineScope(IO).launch {
-
-            if (category != "Все") {
-
-                dao.getAll()?.forEach {
-
-                    if (it.category == category) sortedItemsList.add(it)
-                }
-            } else sortedItemsList = dao.getAll()!!.toMutableList()
-
-
-            withContext(Main) {
-
-                recyclerViewAdapter.updateData(sortedItemsList,
-                    object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
-
-                        override fun onCompleteUpdateRecyclerView() {
-                            swipeRefresh.isRefreshing = false
-                        }
-                    })
-            }
-
-        }
-
-    }
 
     private fun setUpRecyclerViewAdapterAndSpinner(){
 
@@ -316,12 +242,90 @@ class NewsListFragment : Fragment() {
 
             viewModel.categoriesList.set(categories.toList())
 
-
             setCategorySpinnerAdapter()
         })
     }
 
-    fun setUpSwipeRefresh(){
+
+
+    private fun setCategorySpinnerAdapter() {
+
+        val adapter =
+            ArrayAdapter<String>(
+                ctx,
+                android.R.layout.simple_spinner_item,
+                viewModel.categoriesList.get()!!
+            )
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categorySpinner.adapter = adapter
+
+
+        var id = 0
+        viewModel.categoriesList.get()!!.forEachIndexed { index, category: String ->
+
+            if (category == UserSharedPreferences.getLastUserSelectedCategory())
+                id = index
+        }
+        categorySpinner.setSelection(id)
+
+
+        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val category = viewModel.categoriesList.get()!![position]
+                UserSharedPreferences.setLastUserSelectedCategory(category)
+                filterByCategory()
+            }
+
+        }
+    }
+
+
+
+    private fun filterByCategory() {
+
+        val category = UserSharedPreferences.getLastUserSelectedCategory()
+
+        var sortedNewsItemsList: MutableList<NewsItem> = mutableListOf()
+
+
+        CoroutineScope(IO).launch {
+
+            if (category != "Все") {
+
+                dao.getAll()?.forEach {
+
+                    if (it.category == category) sortedNewsItemsList.add(it)
+                }
+            } else sortedNewsItemsList = dao.getAll()!!.toMutableList()
+
+
+            withContext(Main) {
+
+                recyclerViewAdapter.updateData(sortedNewsItemsList,
+                    object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
+
+                        override fun onCompleteUpdateRecyclerView() {
+                            swipeRefresh.isRefreshing = false
+                        }
+                    })
+            }
+
+        }
+
+    }
+
+
+
+    private fun setUpSwipeRefresh(){
 
         swipeRefresh.setColorSchemeColors(ContextCompat.getColor(ctx, R.color.colorAccent))
 

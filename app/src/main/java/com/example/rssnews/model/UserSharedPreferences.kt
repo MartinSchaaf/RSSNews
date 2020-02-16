@@ -15,6 +15,7 @@ object UserSharedPreferences {
     private const val userSharedPreferences:String = "UserSharedPreferences"
     private const val key:String = "category"
 
+
     private fun getSharedPreferences():SharedPreferences {
 
         val context = App.appCtx as Context
@@ -22,10 +23,12 @@ object UserSharedPreferences {
         return context.getSharedPreferences(userSharedPreferences, Context.MODE_PRIVATE)
     }
 
+
     fun setLastUserSelectedCategory(category: String){
 
         sharedPreferences.edit().putString(key,category).apply()
     }
+
 
     fun getLastUserSelectedCategory():String {
 

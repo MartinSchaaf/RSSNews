@@ -6,11 +6,7 @@
     <fragment
         android:id="@+id/newsListFragment"
         android:name="com.example.rssnews.fragments.NewsListFragment"
-        android:label="NewsListFragment" >
-        <action
-            android:id="@+id/action_newsListFragment_to_currentNewsItemFragment"
-            app:destination="@id/currentNewsItemFragment" />
-    </fragment>
+        android:label="NewsListFragment" />
     <fragment
         android:id="@+id/currentNewsItemFragment"
         android:name="com.example.rssnews.fragments.CurrentNewsItemFragment"
