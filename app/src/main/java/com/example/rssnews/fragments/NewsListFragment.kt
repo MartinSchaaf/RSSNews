@@ -15,7 +15,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-
 import com.example.rssnews.R
 import com.example.rssnews.model.NewsListRecyclerViewAdapter
 import com.example.rssnews.model.VestiAPIService
@@ -35,20 +34,19 @@ import android.widget.ArrayAdapter
 import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.model.UserSharedPreferences
 import com.example.rssnews.view_model.MainActivityViewModel
-import java.io.IOException
-import java.util.ArrayList
+
 
 
 class NewsListFragment : Fragment() {
 
-    lateinit var viewModel: NewsListFragmentViewModel
-    lateinit var activityViewModel: MainActivityViewModel
-    lateinit var recyclerView: RecyclerView
-    lateinit var categorySpinner: Spinner
-    lateinit var swipeRefresh: SwipeRefreshLayout
-    lateinit var recyclerViewAdapter: NewsListRecyclerViewAdapter
-    lateinit var ctx: Context
-    lateinit var dao: DataBaseDao
+    private lateinit var viewModel: NewsListFragmentViewModel
+    private lateinit var activityViewModel: MainActivityViewModel
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var categorySpinner: Spinner
+    private lateinit var swipeRefresh: SwipeRefreshLayout
+    private lateinit var recyclerViewAdapter: NewsListRecyclerViewAdapter
+    private lateinit var ctx: Context
+    private lateinit var dao: DataBaseDao
 
 
     override fun onAttach(context: Context) {
@@ -74,6 +72,7 @@ class NewsListFragment : Fragment() {
     ): View? {
 
         val view = inflater.inflate(R.layout.fragment_news_list, container, false)
+
         recyclerView = view.findViewById(R.id.news_list_recyclerView)
         categorySpinner = view.findViewById(R.id.category_spinner)
         swipeRefresh = view.findViewById(R.id.swipeRefresh)
@@ -91,46 +90,20 @@ class NewsListFragment : Fragment() {
         recyclerView.adapter = recyclerViewAdapter
 
         when{
-            viewModel.newsItemsList.value == null -> loadData()
-            viewModel.categoriesList.get() == null -> loadData()
-        }
-
-        viewModel.newsItemsList.observe(this, Observer {
-
-            recyclerViewAdapter.updateData(it,
-                object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
-
-                    override fun onCompleteUpdateRecyclerView() {
-                        swipeRefresh.isRefreshing = false
-                    }
-                })
-
-            val categories = LinkedHashSet<String>()
-
-            it.forEach { newsItem ->
-
-                categories.add(newsItem.category)
+            viewModel.newsItemsList.value == null -> {
+                loadData()
+                setUpRecyclerViewAdapterAndSpinner()
             }
-
-            categories.add("Все")
-
-            viewModel.categoriesList.set(categories.toList())
-
-
-            setCategorySpinnerAdapter()
-        })
-
-
-
-        swipeRefresh.setColorSchemeColors(ContextCompat.getColor(ctx, R.color.colorAccent))
-
-        swipeRefresh.setOnRefreshListener {
-            loadData()
+            viewModel.categoriesList.get() == null -> {
+                loadData()
+                setUpRecyclerViewAdapterAndSpinner()
+            }
+            else -> setUpRecyclerViewAdapterAndSpinner()
         }
 
-        val activity = activity as MainActivity
-        activity.supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        activity.supportActionBar?.setDisplayShowHomeEnabled(false)
+        setUpSwipeRefresh()
+
+        MainActivity.hideBackButtonFromToolbar(activity as MainActivity)
 
     }
 
@@ -221,6 +194,20 @@ class NewsListFragment : Fragment() {
         }
     }
 
+    private fun addCategotiesListToViewModel(itemsList: List<NewsItem>?){
+
+        val categories = LinkedHashSet<String>()
+
+        itemsList?.forEach { newsItem ->
+
+            categories.add(newsItem.category)
+        }
+
+        categories.add("Все")
+
+        viewModel.categoriesList.set(categories.toList())
+    }
+
 
     private fun showToast(message: String) {
 
@@ -303,6 +290,44 @@ class NewsListFragment : Fragment() {
 
         }
 
+    }
+
+    private fun setUpRecyclerViewAdapterAndSpinner(){
+
+        viewModel.newsItemsList.observe(this, Observer {
+
+            recyclerViewAdapter.updateData(it,
+                object : NewsListRecyclerViewAdapter.OnCompleteUpdateRecyclerView {
+
+                    override fun onCompleteUpdateRecyclerView() {
+                        if(swipeRefresh.isRefreshing)swipeRefresh.isRefreshing = false
+                    }
+                })
+
+
+            val categories = LinkedHashSet<String>()
+
+            it.forEach { newsItem ->
+
+                categories.add(newsItem.category)
+            }
+
+            categories.add("Все")
+
+            viewModel.categoriesList.set(categories.toList())
+
+
+            setCategorySpinnerAdapter()
+        })
+    }
+
+    fun setUpSwipeRefresh(){
+
+        swipeRefresh.setColorSchemeColors(ContextCompat.getColor(ctx, R.color.colorAccent))
+
+        swipeRefresh.setOnRefreshListener {
+            loadData()
+        }
     }
 
 }

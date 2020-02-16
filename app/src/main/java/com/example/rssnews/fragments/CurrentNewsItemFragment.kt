@@ -1,7 +1,6 @@
 package com.example.rssnews.fragments
 
-import android.content.Context
-import android.net.Uri
+
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,24 +9,18 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-
 import com.example.rssnews.R
 import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.databinding.FragmentCurrentNewsItemBinding
 import com.example.rssnews.view_model.CurrentNewsItemFragmentViewModel
 import com.example.rssnews.view_model.MainActivityViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+
 
 class CurrentNewsItemFragment : Fragment() {
 
-    lateinit var binding: FragmentCurrentNewsItemBinding
-    lateinit var viewModel: CurrentNewsItemFragmentViewModel
-    lateinit var activityViewModel: MainActivityViewModel
+    private lateinit var binding: FragmentCurrentNewsItemBinding
+    private lateinit var viewModel: CurrentNewsItemFragmentViewModel
+    private lateinit var activityViewModel: MainActivityViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,15 +55,7 @@ class CurrentNewsItemFragment : Fragment() {
 
         })
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        val activity = activity as MainActivity
-
-        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        activity.supportActionBar?.setDisplayShowHomeEnabled(true)
+        MainActivity.showBackButtonInToolbar(activity as MainActivity)
     }
 
 }
