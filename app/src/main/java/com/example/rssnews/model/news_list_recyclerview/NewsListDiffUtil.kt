@@ -1,4 +1,4 @@
-package com.example.rssnews.model
+package com.example.rssnews.model.news_list_recyclerview
 
 import androidx.recyclerview.widget.DiffUtil
 import com.example.rssnews.model.room.NewsItem
