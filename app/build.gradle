@@ -78,4 +78,7 @@ dependencies {
 
     //Navigation
     implementation "android.arch.navigation:navigation-fragment:$navigation_version"
+
+    implementation "io.reactivex.rxjava3:rxjava:3.0.0-RC3"
+
 }

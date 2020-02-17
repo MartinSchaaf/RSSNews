@@ -6,9 +6,17 @@
     <fragment
         android:id="@+id/newsListFragment"
         android:name="com.example.rssnews.fragments.NewsListFragment"
-        android:label="NewsListFragment" />
+        android:label="NewsListFragment" >
+        <action
+            android:id="@+id/action_newsListFragment_to_currentNewsItemFragment"
+            app:destination="@id/currentNewsItemFragment" />
+    </fragment>
     <fragment
         android:id="@+id/currentNewsItemFragment"
         android:name="com.example.rssnews.fragments.CurrentNewsItemFragment"
-        android:label="CurrentNewsItemFragment" />
+        android:label="CurrentNewsItemFragment" >
+        <action
+            android:id="@+id/action_currentNewsItemFragment_to_newsListFragment"
+            app:destination="@id/newsListFragment" />
+    </fragment>
 </navigation>

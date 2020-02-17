@@ -1,10 +1,9 @@
-package com.example.rssnews.model
+package com.example.rssnews.model.news_list_recyclerview
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rssnews.R
@@ -13,14 +12,24 @@ import com.example.rssnews.model.room.NewsItem
 
 class NewsListRecyclerViewAdapter(
     var data: List<NewsItem>?,
-    private val onClickLivaData: MutableLiveData<Bundle>
+    private val itemClickListener: OnAdapterItemClickListener
 
 ) : RecyclerView.Adapter<NewsListRecyclerViewAdapter.NewsListViewHolder>() {
+
+
+
 
     interface OnCompleteUpdateRecyclerView {
 
         fun onCompleteUpdateRecyclerView()
     }
+
+    interface OnAdapterItemClickListener{
+
+        fun onClick(bundle: Bundle)
+    }
+
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsListViewHolder {
 
@@ -34,6 +43,7 @@ class NewsListRecyclerViewAdapter(
         )
         return NewsListViewHolder(binding)
     }
+
 
     override fun getItemCount(): Int = if (data != null) data!!.size else 0
 
@@ -51,21 +61,26 @@ class NewsListRecyclerViewAdapter(
                 bundle.putString("imageUrl", item.imageUrl)
                 bundle.putString("fullText", item.fullText)
 
-                onClickLivaData.value = bundle
+                itemClickListener.onClick(bundle)
             }
         }
 
 
     }
 
+
     fun updateData(newData: List<NewsItem>, listener: OnCompleteUpdateRecyclerView) {
 
-        val diffUtilCallback = NewsListDiffUtil(newData = newData, oldData = data)
+        val diffUtilCallback = NewsListDiffUtil(
+            newData = newData,
+            oldData = data
+        )
         val diffResult = DiffUtil.calculateDiff(diffUtilCallback)
         data = newData
         diffResult.dispatchUpdatesTo(this)
         listener.onCompleteUpdateRecyclerView()
     }
+
 
     inner class NewsListViewHolder(val binding: NewsListItemRowBinding) :
         RecyclerView.ViewHolder(binding.root) {
