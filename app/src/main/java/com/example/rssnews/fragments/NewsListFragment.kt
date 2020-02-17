@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.rssnews.R
-import com.example.rssnews.model.NewsListRecyclerViewAdapter
+import com.example.rssnews.model.news_list_recyclerview.NewsListRecyclerViewAdapter
 import com.example.rssnews.model.VestiAPIService
 import com.example.rssnews.model.room.DataBaseDao
 import com.example.rssnews.view_model.NewsListFragmentViewModel
@@ -34,14 +34,11 @@ import android.widget.ArrayAdapter
 import com.example.rssnews.activity.MainActivity
 import com.example.rssnews.model.UserSharedPreferences
 import com.example.rssnews.model.pojo.ResponseNewsItem
-import com.example.rssnews.view_model.MainActivityViewModel
-
 
 
 class NewsListFragment : Fragment() {
 
     private lateinit var viewModel: NewsListFragmentViewModel
-    private lateinit var activityViewModel: MainActivityViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var categorySpinner: Spinner
     private lateinit var swipeRefresh: SwipeRefreshLayout
@@ -61,7 +58,6 @@ class NewsListFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         viewModel = ViewModelProviders.of(this).get(NewsListFragmentViewModel::class.java)
-        activityViewModel = ViewModelProviders.of(activity!!).get(MainActivityViewModel::class.java)
         dao =
             Room.databaseBuilder(ctx, AppDatabase::class.java, "response_database").build().getDao()
     }
@@ -86,7 +82,18 @@ class NewsListFragment : Fragment() {
         super.onStart()
 
         recyclerViewAdapter =
-            NewsListRecyclerViewAdapter(null, activityViewModel.onListItemClickLiveData)
+            NewsListRecyclerViewAdapter(
+                null,
+                object :
+                    NewsListRecyclerViewAdapter.OnAdapterItemClickListener {
+
+                    override fun onClick(bundle: Bundle) {
+
+                        val activity = activity as MainActivity
+                        activity.navController.navigate(R.id.currentNewsItemFragment, bundle)
+                    }
+                })
+
         recyclerView.layoutManager = LinearLayoutManager(ctx)
         recyclerView.adapter = recyclerViewAdapter
 
