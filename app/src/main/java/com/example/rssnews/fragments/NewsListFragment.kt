@@ -116,7 +116,6 @@ class NewsListFragment : Fragment() {
     }
 
 
-
     private fun loadData() {
 
         CoroutineScope(IO).launch {
